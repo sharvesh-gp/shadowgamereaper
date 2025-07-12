@@ -1,0 +1,202 @@
+.game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+canvas {
+  display: block;
+  background: #000;
+}
+
+.menu-overlay, .pause-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 40px;
+  border-radius: 10px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  border: 2px solid #444;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.menu-overlay h1 {
+  font-size: 2.5em;
+  margin-bottom: 30px;
+  color: #ff6b6b;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.menu-overlay h2 {
+  font-size: 2em;
+  margin-bottom: 20px;
+  color: #4ecdc4;
+}
+
+.menu-options {
+  margin: 20px 0;
+}
+
+.menu-options div {
+  padding: 10px;
+  margin: 5px 0;
+  font-size: 1.2em;
+  transition: all 0.3s ease;
+}
+
+.menu-options .selected {
+  background: rgba(255, 107, 107, 0.3);
+  border-left: 4px solid #ff6b6b;
+  transform: translateX(10px);
+}
+
+.menu-options div:hover {
+  background: rgba(78, 205, 196, 0.2);
+}
+
+input {
+  padding: 15px;
+  font-size: 1.2em;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #444;
+  border-radius: 5px;
+  color: white;
+  text-align: center;
+  margin: 20px 0;
+  font-family: 'Courier New', monospace;
+}
+
+input:focus {
+  outline: none;
+  border-color: #4ecdc4;
+  box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+}
+
+.stats {
+  margin: 20px 0;
+  text-align: left;
+}
+
+.stats p {
+  margin: 8px 0;
+  font-size: 1.1em;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.leaderboard {
+  max-height: 400px;
+  overflow-y: auto;
+  margin: 20px 0;
+  border: 1px solid #444;
+  border-radius: 5px;
+}
+
+.leaderboard-entry {
+  display: grid;
+  grid-template-columns: 40px 1fr 100px 60px 60px;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid #333;
+  align-items: center;
+  font-size: 0.9em;
+}
+
+.leaderboard-entry:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.leaderboard-entry:first-child {
+  background: rgba(255, 215, 0, 0.2);
+  font-weight: bold;
+}
+
+.leaderboard-entry:nth-child(2) {
+  background: rgba(192, 192, 192, 0.2);
+}
+
+.leaderboard-entry:nth-child(3) {
+  background: rgba(205, 127, 50, 0.2);
+}
+
+.pause-overlay {
+  background: rgba(0, 0, 0, 0.95);
+}
+
+.controls {
+  margin-top: 20px;
+  font-size: 0.9em;
+  color: #ccc;
+}
+
+.controls p {
+  margin: 5px 0;
+}
+
+/* Scrollbar styling */
+.leaderboard::-webkit-scrollbar {
+  width: 8px;
+}
+
+.leaderboard::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.leaderboard::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.leaderboard::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .menu-overlay, .pause-overlay {
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+  }
+  
+  .menu-overlay h1 {
+    font-size: 1.8em;
+  }
+  
+  .menu-overlay h2 {
+    font-size: 1.5em;
+  }
+  
+  .leaderboard-entry {
+    font-size: 0.8em;
+    grid-template-columns: 30px 1fr 80px 50px 50px;
+  }
+}
+
+/* Animation effects */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -60%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+.menu-overlay, .pause-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Crosshair cursor for game area */
+.game-container canvas {
+  cursor: crosshair;
+}
+
+/* Hide cursor during gameplay */
+.game-container.playing {
+  cursor: none;
+}

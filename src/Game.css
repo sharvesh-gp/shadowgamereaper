@@ -126,6 +126,31 @@ input:focus {
   background: rgba(205, 127, 50, 0.2);
 }
 
+.leaderboard-loading,
+.leaderboard-empty {
+  padding: 20px;
+  text-align: center;
+  color: #aaa;
+  font-style: italic;
+}
+
+.leaderboard-loading::after {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: 10px;
+  border-radius: 50%;
+  background: #4ecdc4;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.5; }
+}
+
 .pause-overlay {
   background: rgba(0, 0, 0, 0.95);
 }

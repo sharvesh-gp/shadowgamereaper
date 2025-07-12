@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './Game.css';
+import { saveScoreToCloud, fetchGlobalLeaderboard } from './utils/amplifyUtils';
 
 const THEMES = {
   0: { name: 'Desert Wasteland', bg: '#D2B48C', cannonball: '#8B4513', trail: '#CD853F' },
@@ -26,6 +27,7 @@ const Game = () => {
   const [targetsHit, setTargetsHit] = useState(0);
   const [maxLevel, setMaxLevel] = useState(1);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [isLeaderboardLoading, setIsLeaderboardLoading] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [volume, setVolume] = useState(0.5);
   const [weather, setWeather] = useState('Clear');
@@ -43,14 +45,33 @@ const Game = () => {
     paused: false
   });
 
-  const loadLeaderboard = useCallback(() => {
-    const saved = localStorage.getItem('shadowReaperLeaderboard');
-    if (saved) {
-      setLeaderboard(JSON.parse(saved));
+  const loadLeaderboard = useCallback(async () => {
+    setIsLeaderboardLoading(true);
+    try {
+      // First try to load from global leaderboard
+      const globalLeaderboard = await fetchGlobalLeaderboard(50);
+      if (globalLeaderboard && globalLeaderboard.length > 0) {
+        setLeaderboard(globalLeaderboard);
+      } else {
+        // Fall back to local storage if global fetch fails
+        const saved = localStorage.getItem('shadowReaperLeaderboard');
+        if (saved) {
+          setLeaderboard(JSON.parse(saved));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading leaderboard:', error);
+      // Fall back to local storage
+      const saved = localStorage.getItem('shadowReaperLeaderboard');
+      if (saved) {
+        setLeaderboard(JSON.parse(saved));
+      }
+    } finally {
+      setIsLeaderboardLoading(false);
     }
   }, []);
 
-  const saveScore = useCallback((finalScore, finalLevel, finalAccuracy) => {
+  const saveScore = useCallback(async (finalScore, finalLevel, finalAccuracy) => {
     const newEntry = {
       name: playerName,
       score: finalScore,
@@ -60,7 +81,14 @@ const Game = () => {
       id: Date.now() + Math.random() // Unique identifier
     };
     
-    // Remove any existing entry for this player name to avoid duplicates
+    // Save to global leaderboard
+    try {
+      await saveScoreToCloud(playerName, finalScore, finalLevel, finalAccuracy);
+    } catch (error) {
+      console.error('Error saving to global leaderboard:', error);
+    }
+    
+    // Also save locally as backup
     const filteredLeaderboard = leaderboard.filter(entry => entry.name !== playerName);
     const updated = [...filteredLeaderboard, newEntry]
       .sort((a, b) => b.score - a.score)
@@ -68,7 +96,10 @@ const Game = () => {
     
     setLeaderboard(updated);
     localStorage.setItem('shadowReaperLeaderboard', JSON.stringify(updated));
-  }, [leaderboard, playerName]);
+    
+    // Refresh leaderboard to get latest global scores
+    loadLeaderboard();
+  }, [leaderboard, playerName, loadLeaderboard]);
 
   const playSound = useCallback((type) => {
     if (!soundEnabled) return;
@@ -106,8 +137,8 @@ const Game = () => {
     const dx = targetX - startX;
     const dy = targetY - startY;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    const speed = 8;
-    const gravity = 0.05;
+    const speed = 12;
+    const gravity = 0.08;
     
     // Calculate trajectory with gravity compensation
     const time = distance / speed;
@@ -770,17 +801,23 @@ const Game = () => {
       case 'LEADERBOARD':
         return (
           <div className="menu-overlay">
-            <h2>🏆 Leaderboard</h2>
+            <h2>🏆 Global Leaderboard</h2>
             <div className="leaderboard">
-              {leaderboard.slice(0, 10).map((entry, index) => (
-                <div key={index} className="leaderboard-entry">
-                  <span>#{index + 1}</span>
-                  <span>{entry.name}</span>
-                  <span>{entry.score.toLocaleString()}</span>
-                  <span>L{entry.maxLevel}</span>
-                  <span>{entry.accuracy}%</span>
-                </div>
-              ))}
+              {isLeaderboardLoading ? (
+                <div className="leaderboard-loading">Loading global scores...</div>
+              ) : leaderboard.length > 0 ? (
+                leaderboard.slice(0, 10).map((entry, index) => (
+                  <div key={entry.id || index} className="leaderboard-entry">
+                    <span>#{index + 1}</span>
+                    <span>{entry.name}</span>
+                    <span>{entry.score.toLocaleString()}</span>
+                    <span>L{entry.maxLevel}</span>
+                    <span>{entry.accuracy}%</span>
+                  </div>
+                ))
+              ) : (
+                <div className="leaderboard-empty">No scores available yet</div>
+              )}
             </div>
             <p>Press Escape to return</p>
           </div>
